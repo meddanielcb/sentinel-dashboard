@@ -125,14 +125,22 @@ function App() {
   const [activeTab, setActiveTab] = useState('overview');
   const [isDark, setIsDark] = useState(true);
   const [vpsStatus, setVpsStatus] = useState(null);
+  const [tokensStatus, setTokensStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
 
   const fetchStatus = async () => {
     try {
-      const res = await fetch('/api/vps/status');
-      const data = await res.json();
-      setVpsStatus(data);
+      const [vpsRes, tokensRes] = await Promise.all([
+        fetch('/api/vps/status'),
+        fetch('/api/tokens/status')
+      ]);
+      
+      const vpsData = await vpsRes.json();
+      const tokensData = await tokensRes.json();
+      
+      setVpsStatus(vpsData);
+      setTokensStatus(tokensData);
       setLastUpdate(new Date().toLocaleTimeString('pt-BR'));
       setLoading(false);
     } catch (error) {
@@ -185,6 +193,38 @@ function App() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6 animate-slide-in">
+            {/* API Status Cards */}
+            <div className={`p-6 rounded-2xl ${isDark ? 'glass' : 'glass-light'}`}>
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                Status das APIs
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {tokensStatus?.providers?.map(provider => (
+                  <div key={provider.id} className={`p-4 rounded-xl ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium">{provider.name}</span>
+                      <div className={`px-2 py-1 rounded text-xs font-semibold ${
+                        provider.status === 'configured' 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : 'bg-red-500/20 text-red-400'
+                      }`}>
+                        {provider.status === 'configured' ? '✓ Configurado' : '✗ Sem API Key'}
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-400">{provider.model}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <p className="text-sm text-gray-400">
+                  Modelo Primário: <span className="font-semibold text-white">{tokensStatus?.primaryModel}</span>
+                </p>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <MetricCard
                 label="CPU"
