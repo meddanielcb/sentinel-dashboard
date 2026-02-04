@@ -118,10 +118,35 @@ app.get('/api/tokens/status', async (req, res) => {
 // Session status (usage stats)
 app.get('/api/session/status', async (req, res) => {
   try {
-    const stats = await executeCommand("openclaw status 2>/dev/null || echo 'unavailable'");
-    res.json({ stats, timestamp: new Date().toISOString() });
+    const sessionsRaw = await executeCommand("openclaw sessions list --json 2>/dev/null");
+    const sessions = JSON.parse(sessionsRaw);
+    
+    // Calcular totais de todas as sessões ativas
+    let totalInput = 0;
+    let totalOutput = 0;
+    let totalTokens = 0;
+    
+    sessions.sessions.forEach(s => {
+      totalInput += s.inputTokens || 0;
+      totalOutput += s.outputTokens || 0;
+      totalTokens += s.totalTokens || 0;
+    });
+    
+    // Estimar custos (Claude Sonnet 4.5: $3/M input, $15/M output aproximadamente)
+    const estimatedCost = (totalInput / 1000000 * 3) + (totalOutput / 1000000 * 15);
+    
+    res.json({
+      sessions: sessions.sessions,
+      totals: {
+        input: totalInput,
+        output: totalOutput,
+        total: totalTokens,
+        estimatedCost: estimatedCost.toFixed(4)
+      },
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message, raw: error.toString() });
   }
 });
 

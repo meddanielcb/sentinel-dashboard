@@ -126,21 +126,25 @@ function App() {
   const [isDark, setIsDark] = useState(true);
   const [vpsStatus, setVpsStatus] = useState(null);
   const [tokensStatus, setTokensStatus] = useState(null);
+  const [sessionStatus, setSessionStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
 
   const fetchStatus = async () => {
     try {
-      const [vpsRes, tokensRes] = await Promise.all([
+      const [vpsRes, tokensRes, sessionRes] = await Promise.all([
         fetch('/api/vps/status'),
-        fetch('/api/tokens/status')
+        fetch('/api/tokens/status'),
+        fetch('/api/session/status')
       ]);
       
       const vpsData = await vpsRes.json();
       const tokensData = await tokensRes.json();
+      const sessionData = await sessionRes.json();
       
       setVpsStatus(vpsData);
       setTokensStatus(tokensData);
+      setSessionStatus(sessionData);
       setLastUpdate(new Date().toLocaleTimeString('pt-BR'));
       setLoading(false);
     } catch (error) {
@@ -193,6 +197,39 @@ function App() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6 animate-slide-in">
+            {/* Token Usage Card */}
+            <div className={`p-6 rounded-2xl ${isDark ? 'glass' : 'glass-light'}`}>
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Uso de Tokens
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className={`p-4 rounded-xl ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+                  <p className="text-sm text-gray-400 mb-1">Entrada</p>
+                  <p className="text-2xl font-bold">{(sessionStatus?.totals?.input || 0).toLocaleString()}</p>
+                </div>
+                <div className={`p-4 rounded-xl ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+                  <p className="text-sm text-gray-400 mb-1">Saída</p>
+                  <p className="text-2xl font-bold">{(sessionStatus?.totals?.output || 0).toLocaleString()}</p>
+                </div>
+                <div className={`p-4 rounded-xl ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+                  <p className="text-sm text-gray-400 mb-1">Total</p>
+                  <p className="text-2xl font-bold">{(sessionStatus?.totals?.total || 0).toLocaleString()}</p>
+                </div>
+                <div className={`p-4 rounded-xl ${isDark ? 'bg-green-500/10' : 'bg-green-500/10'}`}>
+                  <p className="text-sm text-gray-400 mb-1">Custo Estimado</p>
+                  <p className="text-2xl font-bold text-green-400">${sessionStatus?.totals?.estimatedCost || '0.00'}</p>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <p className="text-xs text-gray-500">
+                  {sessionStatus?.sessions?.length || 0} sessão(ões) ativa(s) · Cálculo baseado em Claude Sonnet 4.5
+                </p>
+              </div>
+            </div>
+
             {/* API Status Cards */}
             <div className={`p-6 rounded-2xl ${isDark ? 'glass' : 'glass-light'}`}>
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
