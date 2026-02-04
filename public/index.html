@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentinel Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            neon: {
+              blue: '#00f3ff',
+              purple: '#bf00ff',
+              pink: '#ff00ea',
+              green: '#00ff9d'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); }
+      50% { box-shadow: 0 0 30px rgba(0, 243, 255, 0.6); }
+    }
+    .card-glow {
+      animation: glow 3s ease-in-out infinite;
+    }
+    .card-enter {
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+  <div id="app"></div>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel" src="/app.js"></script>
+</body>
+</html>
